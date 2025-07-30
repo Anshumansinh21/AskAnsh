@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 import { motion } from 'framer-motion';
 import logo from './assets/My_Logo.jpeg';
-motion
+motion;
 
 function App() {
   const [messages, setMessages] = useState([]);
@@ -51,6 +51,17 @@ If someone asks about Anshuman, you should reply confidently and knowledgeably, 
           ]
         })
       });
+
+      // Handle rate limit
+      if (response.status === 429) {
+        const resetTimestamp = response.headers.get('X-RateLimit-Reset');
+        const resetDate = resetTimestamp
+          ? new Date(Number(resetTimestamp)).toLocaleString()
+          : 'Unknown time';
+        const errorMessage = `⚠️ You've hit the daily free usage limit.\n\n⏳ It will reset at: **${resetDate}**.\n\nConsider upgrading for more access.`;
+        setMessages([...newMessages, { role: 'assistant', content: errorMessage }]);
+        return;
+      }
 
       const raw = await response.text();
       console.log('Raw API response:', raw);
